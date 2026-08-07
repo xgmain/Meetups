@@ -1,26 +1,45 @@
 using System;
+using Application.Meetups.Commands;
+using Application.Meetups.Queries;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
+using MediatR;
 
 namespace API.Controllers;
 
-public class MeetupsController(AppDbContext context) : BaseApiController
+public class MeetupsController : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<List<Meetup>>> GetMeetups()
     {
-        return await context.Meetups.ToListAsync();
+        return await Mediator.Send(new GetMeetupList.Query());
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Meetup>> GetMeetupDetail(string id)
     {
-        var meetup = await context.Meetups.FindAsync(id);
+        return await Mediator.Send(new GetMeetupDetails.Query { Id = id });
+    }
 
-        if (meetup == null) return NotFound();
+    [HttpPost]
+    public async Task<IActionResult> CreateMeetup(Meetup meetup)
+    {
+        return Ok(await Mediator.Send(new CreateMeetup.Command { Meetup = meetup }));
+    }
 
-        return meetup;
+    [HttpPut]
+    public async Task<IActionResult> Edit(Meetup meetup)
+    {
+        await Mediator.Send(new EditMeetup.Command { Meetup = meetup });
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        await Mediator.Send(new DeleteMeetup.Command { Id = id });
+
+        return Ok();
     }
 }

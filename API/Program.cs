@@ -1,3 +1,5 @@
+using Application.Core;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -6,6 +8,8 @@ const string CorsPolicyName = "Client";
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddAutoMapper(_ => { }, typeof(MappingProfiles));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MappingProfiles).Assembly));
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));

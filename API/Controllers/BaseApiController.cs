@@ -1,5 +1,6 @@
-using System;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace API.Controllers;
 
@@ -7,5 +8,7 @@ namespace API.Controllers;
 [ApiController]
 public class BaseApiController : ControllerBase
 {
+    private ISender? _sender;
 
+    protected ISender Mediator => _sender ??= HttpContext.RequestServices.GetRequiredService<ISender>();
 }
