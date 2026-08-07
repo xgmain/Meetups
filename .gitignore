@@ -1,0 +1,27 @@
+# Build outputs
+bin/
+obj/
+
+# .NET user-specific files
+*.user
+*.rsuser
+*.suo
+
+# IDE settings
+.vs/
+.idea/
+
+# Node dependencies and build artifacts
+node_modules/
+dist/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local app settings and databases
+appsettings.Development.json
+*.db
+*.db-shm
+*.db-wal
