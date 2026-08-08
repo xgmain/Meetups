@@ -2,6 +2,13 @@ import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import { useMeetups } from "../../../lib/hooks/useMeetups";
 import { useNavigate, useParams } from "react-router";
 
+function toLocalDateTimeInputValue(date: string | Date) {
+    const value = new Date(date);
+    const timezoneOffset = value.getTimezoneOffset() * 60000;
+
+    return new Date(value.getTime() - timezoneOffset).toISOString().slice(0, 16);
+}
+
 export default function MeetupForm() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -41,10 +48,8 @@ export default function MeetupForm() {
                 <TextField name='title' label='Title' defaultValue={meetup?.title || ''} />
                 <TextField name='description' label='Description' defaultValue={meetup?.description || ''} multiline rows={3} />
                 <TextField name='category' defaultValue={meetup?.category || ''} label='Category' />
-                <TextField name='date' defaultValue={meetup?.date
-                    ? new Date(meetup.date).toISOString().split('T')[0]
-                    : new Date().toISOString().split('T')[0]}
-                           label='Date' type="date"
+                <TextField name='date' defaultValue={toLocalDateTimeInputValue(meetup?.date || new Date())}
+                           label='Date' type="datetime-local"
                 />
                 <TextField name='city' defaultValue={meetup?.city || ''} label='City' />
                 <TextField name='venue' defaultValue={meetup?.venue || ''} label='Venue' />
