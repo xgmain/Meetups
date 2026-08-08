@@ -1,7 +1,7 @@
 ﻿import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
 
-export const useMeetups = () => {
+export const useMeetups = (id?: string) => {
     const queryClient = useQueryClient();
 
     const { isPending, data: meetups } = useQuery({
@@ -11,6 +11,15 @@ export const useMeetups = () => {
             console.log(response);
             return response.data;
         }
+    });
+
+    const { data: meetup, isLoadingMeetup: isLoadingMeetup } = useQuery({
+        queryKey: ['meetups', id],
+        queryFn: async () => {
+            const response = await agent.get<Meetup>(`/meetups/${id}`);
+            return response.data;
+        },
+        enabled: !!id
     });
 
     const updateMeetup = useMutation({
@@ -51,6 +60,8 @@ export const useMeetups = () => {
     return {
         meetups: meetups ?? [],
         isPending,
+        meetup,
+        isLoadingMeetup,
         updateMeetup,
         createMeetup,
         deleteMeetup

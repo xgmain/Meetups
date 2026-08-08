@@ -1,12 +1,12 @@
 import { Box, Button, Card, CardActions, CardContent, Chip, Typography } from "@mui/material";
 import { useMeetups } from "../../../lib/hooks/useMeetups";
+import { Link } from "react-router";
 
 type Props = {
-    meetup: Meetup;
-    selectMeetup: (id: string) => void
+    meetup: Meetup
 }
 
-export default function MeetupCard({ meetup, selectMeetup }: Props) {
+export default function MeetupCard({ meetup }: Props) {
     const { deleteMeetup } = useMeetups();
     return (
         <Card sx={{ borderRadius: 3 }}>
@@ -34,7 +34,7 @@ export default function MeetupCard({ meetup, selectMeetup }: Props) {
                     >
                         Delete
                     </Button>
-                    <Button onClick={() => selectMeetup(meetup.id)} variant="contained" size="medium">View</Button>
+                    <Button component={Link} to={`/meetups/${meetup.id}`} variant="contained" size="medium">View</Button>
                 </Box>
             </CardActions>
         </Card>

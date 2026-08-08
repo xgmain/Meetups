@@ -1,17 +1,15 @@
 import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@mui/material";
 import { useMeetups } from "../../../lib/hooks/useMeetups";
+import { Link, useNavigate, useParams } from "react-router";
 
-type Props = {
-    selectedMeetup: Meetup
-    cancelSelect: () => void
-    openForm: (id: string) => void
-}
+export default function ActivityDetails() {
+    const navigate = useNavigate();
+    const {id} = useParams();
+    const {meetup, isLoadingMeetup} = useMeetups(id);
 
-export default function MeetupDetails({ selectedMeetup, cancelSelect, openForm }: Props) {
-    const { meetups } = useMeetups();
-    const meetup = meetups?.find(x => x.id === selectedMeetup.id);
+    if (isLoadingMeetup) return <div>Loading meetup...</div>;
 
-    if (!meetup) return <Typography>Loading...</Typography>
+    if (!meetup) return <div>Activity not found</div>;
 
     return (
         <Card sx={{ borderRadius: 3 }}>
@@ -25,8 +23,8 @@ export default function MeetupDetails({ selectedMeetup, cancelSelect, openForm }
                 <Typography variant="body1">{meetup.description}</Typography>
             </CardContent>
             <CardActions>
-                <Button onClick={() => openForm(meetup.id)} color="primary">Edit</Button>
-                <Button onClick={cancelSelect} color='inherit'>Cancel</Button>
+                <Button component={Link} to={`/manage/${meetup.id}`} color="primary">Edit</Button>
+                <Button onClick={() => navigate('/meetups')} color='inherit'>Cancel</Button>
             </CardActions>
         </Card>
     )

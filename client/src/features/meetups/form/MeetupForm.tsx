@@ -1,13 +1,11 @@
 import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import { useMeetups } from "../../../lib/hooks/useMeetups";
+import { useNavigate, useParams } from "react-router";
 
-type Props = {
-    meetup?: Meetup
-    closeForm: () => void
-}
-
-export default function MeetupForm({ closeForm, meetup }: Props) {
-    const { updateMeetup, createMeetup } = useMeetups();
+export default function MeetupForm() {
+    const navigate = useNavigate();
+    const { id } = useParams();
+    const { updateMeetup, createMeetup, meetup, isLoadingMeetup } = useMeetups(id);
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -22,21 +20,26 @@ export default function MeetupForm({ closeForm, meetup }: Props) {
         if (meetup) {
             data.id = meetup.id;
             await updateMeetup.mutateAsync(data as unknown as Meetup);
-            closeForm();
+            navigate(`/meetups/${meetup.id}`);
         } else {
-            await createMeetup.mutateAsync(data as unknown as Meetup);
-            closeForm();
+            createMeetup.mutate(data as unknown as Meetup, {
+                onSuccess: (id) => {
+                    navigate(`/meetups/${id}`)
+                }
+            });
         }
     };
+
+    if (isLoadingMeetup) return <Typography>Loading meetup...</Typography>;
 
     return (
         <Paper sx={{ borderRadius: 3, padding: 3 }}>
             <Typography variant="h5" gutterBottom color="primary">
-                Create meetup
+                {meetup ? 'Edit Meetup' : 'Create Meetup'}
             </Typography>
             <Box component='form' onSubmit={handleSubmit} display='flex' flexDirection='column' gap={3}>
                 <TextField name='title' label='Title' defaultValue={meetup?.title || ''} />
-                <TextField name='description' label='Description' defaultValue={meetup?.category || ''} multiline rows={3} />
+                <TextField name='description' label='Description' defaultValue={meetup?.description || ''} multiline rows={3} />
                 <TextField name='category' defaultValue={meetup?.category || ''} label='Category' />
                 <TextField name='date' defaultValue={meetup?.date
                     ? new Date(meetup.date).toISOString().split('T')[0]
@@ -46,7 +49,7 @@ export default function MeetupForm({ closeForm, meetup }: Props) {
                 <TextField name='city' defaultValue={meetup?.city || ''} label='City' />
                 <TextField name='venue' defaultValue={meetup?.venue || ''} label='Venue' />
                 <Box display='flex' justifyContent='end' gap={3}>
-                    <Button onClick={closeForm} color='inherit'>Cancel</Button>
+                    <Button color='inherit'>Cancel</Button>
                     <Button
                         type="submit"
                         color='success'
