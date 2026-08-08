@@ -1,5 +1,6 @@
 import { Grid } from "@mui/material";
 import MeetupList from "./MeetupList";
+import MeetupFilters from "./MeetupFilters";
 
 export default function MeetupDashboard() {
     return (
@@ -8,7 +9,7 @@ export default function MeetupDashboard() {
                 <MeetupList />
             </Grid>
             <Grid size={5}>
-                Meetup filters go here
+                <MeetupFilters />
             </Grid>
         </Grid>
     )
