@@ -1,25 +1,31 @@
-﻿using MediatR;
+﻿using Application.Core;
+using MediatR;
 using Persistence;
 
 namespace Application.Meetups.Commands;
 
 public class DeleteMeetup
 {
-    public class Command : IRequest
+    public class Command : IRequest<Result<Unit>>
     {
         public required string Id { get; set; }
     }
 
-    public class Handler(AppDbContext context) : IRequestHandler<Command>
+    public class Handler(AppDbContext context) : IRequestHandler<Command, Result<Unit>>
     {
-        public async Task Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var meetup = await context.Meetups.FindAsync([request.Id], cancellationToken)
-                           ?? throw new ArgumentException("Cannot find this meetup in the DB");
+            var activity = await context.Meetups.FindAsync([request.Id], cancellationToken);
 
-            context.Remove(meetup);
+            if (activity == null) return Result<Unit>.Failure("Activity not found", 404);
 
-            await context.SaveChangesAsync(cancellationToken);
+            context.Remove(activity);
+
+            var result = await context.SaveChangesAsync(cancellationToken) > 0;
+
+            if (!result) return Result<Unit>.Failure("Failed to delete the activity", 400);
+
+            return Result<Unit>.Success(Unit.Value);
         }
     }
 }

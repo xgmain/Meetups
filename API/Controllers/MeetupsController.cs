@@ -1,6 +1,7 @@
 using System;
 using Application.Meetups.Commands;
 using Application.Meetups.Queries;
+using Application.Meetups.DTOs;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
@@ -18,28 +19,24 @@ public class MeetupsController : BaseApiController
     [HttpGet("{id}")]
     public async Task<ActionResult<Meetup>> GetMeetupDetail(string id)
     {
-        return await Mediator.Send(new GetMeetupDetails.Query { Id = id });
+        return HandleResult(await Mediator.Send(new GetMeetupDetails.Query { Id = id }));
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateMeetup(Meetup meetup)
+    public async Task<IActionResult> CreateMeetup(CreateMeetupDto meetupDto)
     {
-        return Ok(await Mediator.Send(new CreateMeetup.Command { Meetup = meetup }));
+        return HandleResult(await Mediator.Send(new CreateMeetup.Command { MeetupDto = meetupDto }));
     }
 
     [HttpPut]
-    public async Task<IActionResult> Edit(Meetup meetup)
+    public async Task<IActionResult> Edit(EditMeetupDto meetupDto)
     {
-        await Mediator.Send(new EditMeetup.Command { Meetup = meetup });
-
-        return NoContent();
+        return HandleResult(await Mediator.Send(new EditMeetup.Command { MeetupDto = meetupDto }));
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        await Mediator.Send(new DeleteMeetup.Command { Id = id });
-
-        return Ok();
+        return HandleResult(await Mediator.Send(new DeleteMeetup.Command { Id = id }));
     }
 }

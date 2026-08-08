@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using Application.Core;
+using Application.Meetups.DTOs;
+using AutoMapper;
 using Domain;
 using MediatR;
 using Persistence;
@@ -7,21 +9,26 @@ namespace Application.Meetups.Commands;
 
 public class EditMeetup
 {
-    public class Command : IRequest
+    public class Command : IRequest<Result<Unit>>
     {
-        public required Meetup Meetup { get; set; }
+        public required EditMeetupDto MeetupDto { get; set; }
     }
 
-    public class Handler(AppDbContext context, IMapper mapper) : IRequestHandler<Command>
+    public class Handler(AppDbContext context, IMapper mapper) : IRequestHandler<Command, Result<Unit>>
     {
-        public async Task Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var meetup = await context.Meetups.FindAsync([request.Meetup.Id], cancellationToken)
-                           ?? throw new ArgumentException("Cannot find this meetup in the DB");
+            var meetup = await context.Meetups.FindAsync([request.MeetupDto.Id, cancellationToken], cancellationToken: cancellationToken);
 
-            mapper.Map(request.Meetup, meetup);
+            if (meetup == null) return Result<Unit>.Failure("Meetup not found", 404);
 
-            await context.SaveChangesAsync(cancellationToken);
+            mapper.Map(request.MeetupDto, meetup);
+
+            var result = await context.SaveChangesAsync(cancellationToken) > 0;
+
+            if (!result) return Result<Unit>.Failure("Failed to delete the meetup", 400);
+
+            return Result<Unit>.Success(Unit.Value);
         }
     }
 }

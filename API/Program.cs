@@ -1,4 +1,7 @@
+using API.Middleware;
+using Application.Meetups.Validators;
 using Application.Core;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -23,10 +26,13 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+builder.Services.AddValidatorsFromAssemblyContaining<CreateMeetupValidator>();
+builder.Services.AddTransient<ExceptionMiddleware>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(CorsPolicyName);
 app.MapControllers();
 
