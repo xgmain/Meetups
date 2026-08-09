@@ -1,49 +1,72 @@
 using API.Middleware;
+using Application.Meetups.Queries;
 using Application.Meetups.Validators;
 using Application.Core;
+using Domain;
 using FluentValidation;
-using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
-const string CorsPolicyName = "Client";
 
 // Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddAutoMapper(_ => { }, typeof(MappingProfiles));
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MappingProfiles).Assembly));
+builder.Services.AddControllers(opt => 
+{
+    var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+    opt.Filters.Add(new AuthorizeFilter(policy));
+});
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-builder.Services.AddCors(options =>
+builder.Services.AddCors();
+builder.Services.AddMediatR(cfg =>
 {
-    options.AddPolicy(CorsPolicyName, policy =>
-    {
-        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    cfg.RegisterServicesFromAssemblyContaining<GetMeetupList>();
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    cfg.LicenseKey = builder.Configuration["Licences:MediatR"];
 });
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.LicenseKey = builder.Configuration["Licences:MediatR"];
+}, typeof(MappingProfiles));
 builder.Services.AddValidatorsFromAssemblyContaining<CreateMeetupValidator>();
 builder.Services.AddTransient<ExceptionMiddleware>();
+builder.Services.AddIdentityApiEndpoints<User>(opt =>
+    {
+        opt.User.RequireUniqueEmail = true;
+    })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseCors(CorsPolicyName);
+app.UseCors(x => x
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials()
+    .WithOrigins("http://localhost:3000", "https://localhost:3000"));
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();
+app.MapGroup("api").MapIdentityApi<User>();
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
-try 
+try
 {
     var context = services.GetRequiredService<AppDbContext>();
+    var userManager = services.GetRequiredService<UserManager<User>>();
     await context.Database.MigrateAsync();
-    await DbInitializer.SeedData(context);
+    await DbInitializer.SeedData(context, userManager);
 }
 catch (Exception ex)
 {

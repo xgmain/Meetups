@@ -4,7 +4,7 @@ using Application.Meetups.Queries;
 using Application.Meetups.DTOs;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
-using MediatR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers;
 
