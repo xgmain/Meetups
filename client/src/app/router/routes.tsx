@@ -1,10 +1,12 @@
-﻿import { createBrowserRouter } from "react-router";
+﻿import { createBrowserRouter, Navigate } from "react-router";
 import App from "../layout/App";
 import MeetupDashboard from "../../features/meetups/dashboard/MeetupDashboard";
 import MeetupForm from "../../features/meetups/form/MeetupForm";
 import HomePage from "../../features/home/HomePage";
 import MeetupDetailsPage from "../../features/meetups/details/MeetupDetailsPage";
 import Counter from "../../features/counter/Counter";
+import NotFound from "../../features/errors/NotFound";
+import ServerError from "../../features/errors/ServerError";
 
 export const router = createBrowserRouter([
     {
@@ -16,7 +18,10 @@ export const router = createBrowserRouter([
             { path: 'meetups/:id', element: <MeetupDetailsPage /> },
             { path: 'createMeetup', element: <MeetupForm key='create' /> },
             { path: 'manage/:id', element: <MeetupForm /> },
-            { path: 'counter', element: <Counter /> }
+            { path: 'counter', element: <Counter /> },
+            { path: 'not-found', element: <NotFound /> },
+            { path: 'server-error', element: <ServerError /> },
+            { path: '*', element: <Navigate replace to='/not-found' /> }
         ]
     },
 ]);
