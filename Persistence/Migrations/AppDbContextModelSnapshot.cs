@@ -59,6 +59,27 @@ namespace Persistence.Migrations
                     b.ToTable("Meetups");
                 });
 
+            modelBuilder.Entity("Domain.MeetupAttendee", b =>
+                {
+                    b.Property<string>("MeetupId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateJoined")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsOrganizer")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("MeetupId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("MeetupAttendees");
+                });
+
             modelBuilder.Entity("Domain.User", b =>
                 {
                     b.Property<string>("Id")
@@ -260,6 +281,25 @@ namespace Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.MeetupAttendee", b =>
+                {
+                    b.HasOne("Domain.Meetup", "Meetup")
+                        .WithMany("Attendees")
+                        .HasForeignKey("MeetupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.User", "User")
+                        .WithMany("Meetups")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Meetup");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -309,6 +349,16 @@ namespace Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.Meetup", b =>
+                {
+                    b.Navigation("Attendees");
+                });
+
+            modelBuilder.Entity("Domain.User", b =>
+                {
+                    b.Navigation("Meetups");
                 });
 #pragma warning restore 612, 618
         }

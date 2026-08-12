@@ -1,4 +1,5 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using Application.Meetups.DTOs;
 using AutoMapper;
 using Domain;
@@ -14,19 +15,30 @@ public class CreateMeetup
         public required CreateMeetupDto MeetupDto { get; set; }
     }
     
-    public class Handler(AppDbContext context, IMapper mapper) : IRequestHandler<Command, Result<string>>
+    public class Handler(AppDbContext context, IMapper mapper, IUserAccessor userAccessor) : IRequestHandler<Command, Result<string>>
     {
         public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var activity = mapper.Map<Meetup>(request.MeetupDto);
+            var user = await userAccessor.GetUserAsync();
+            
+            var meetup = mapper.Map<Meetup>(request.MeetupDto);
 
-            context.Meetups.Add(activity);
+            context.Meetups.Add(meetup);
+
+            var attendee = new MeetupAttendee
+            {
+                MeetupId = meetup.Id,
+                UserId = user.Id,
+                IsOrganizer = true
+            };
+            
+            meetup.Attendees.Add(attendee);
 
             var result = await context.SaveChangesAsync(cancellationToken) > 0;
 
-            if (!result) return Result<string>.Failure("Failed to edit the activity", 400);
+            if (!result) return Result<string>.Failure("Failed to edit the meetup", 400);
 
-            return Result<string>.Success(activity.Id);
+            return Result<string>.Success(meetup.Id);
         }
     }
 }

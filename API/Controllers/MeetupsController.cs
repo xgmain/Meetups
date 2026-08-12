@@ -11,13 +11,13 @@ namespace API.Controllers;
 public class MeetupsController : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<List<Meetup>>> GetMeetups()
+    public async Task<ActionResult<List<MeetupDto>>> GetMeetups()
     {
-        return await Mediator.Send(new GetMeetupList.Query());
+        return HandleResult(await Mediator.Send(new GetMeetupList.Query()));
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Meetup>> GetMeetupDetail(string id)
+    public async Task<ActionResult<MeetupDto>> GetMeetupDetail(string id)
     {
         return HandleResult(await Mediator.Send(new GetMeetupDetails.Query { Id = id }));
     }
@@ -38,5 +38,11 @@ public class MeetupsController : BaseApiController
     public async Task<IActionResult> Delete(string id)
     {
         return HandleResult(await Mediator.Send(new DeleteMeetup.Command { Id = id }));
+    }
+    
+    [HttpPost("{id}/attend")]
+    public async Task<IActionResult> Attend(string id)
+    {
+        return HandleResult(await Mediator.Send(new UpdateAttendance.Command { Id = id }));
     }
 }

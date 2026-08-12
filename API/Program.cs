@@ -2,8 +2,11 @@ using API.Middleware;
 using Application.Meetups.Queries;
 using Application.Meetups.Validators;
 using Application.Core;
+using Application.Interfaces;
 using Domain;
 using FluentValidation;
+using Infrastructure;
+using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -11,6 +14,16 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+var sqliteConnectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
+
+if (!Path.IsPathRooted(sqliteConnectionStringBuilder.DataSource))
+{
+    sqliteConnectionStringBuilder.DataSource =
+        Path.Combine(builder.Environment.ContentRootPath, sqliteConnectionStringBuilder.DataSource);
+}
 
 // Add services to the container.
 builder.Services.AddControllers(opt => 
@@ -20,7 +33,7 @@ builder.Services.AddControllers(opt =>
 });
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
-    opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    opt.UseSqlite(sqliteConnectionStringBuilder.ConnectionString);
 });
 builder.Services.AddCors();
 builder.Services.AddMediatR(cfg =>
@@ -29,6 +42,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
     cfg.LicenseKey = builder.Configuration["Licences:MediatR"];
 });
+builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.LicenseKey = builder.Configuration["Licences:MediatR"];
