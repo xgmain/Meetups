@@ -21,6 +21,9 @@ public class BaseApiController : ControllerBase
         if (!result.IsSuccess && result.Code == 404)
             return NotFound();
 
+        if (!result.IsSuccess && result.Code == 403)
+            return Forbid();
+
         return BadRequest(result.Error);
     }
 }

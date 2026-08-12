@@ -6,6 +6,7 @@ using Application.Interfaces;
 using Domain;
 using FluentValidation;
 using Infrastructure;
+using Infrastructure.Security;
 using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -55,6 +56,14 @@ builder.Services.AddIdentityApiEndpoints<User>(opt =>
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddAuthorization(opt =>
+{
+    opt.AddPolicy("IsMeetupOrganizer", policy => 
+    {
+        policy.Requirements.Add(new IsOrganizerRequirement());
+    });
+});
+builder.Services.AddTransient<IAuthorizationHandler, IsOrganizerRequirementHandler>();
 
 var app = builder.Build();
 

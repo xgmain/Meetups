@@ -28,7 +28,7 @@ export const useMeetups = (id?: string) => {
 
     const updateMeetup = useMutation({
         mutationFn: async (meetup: Meetup) => {
-            await agent.put('/meetups', meetup);
+            await agent.put(`/meetups/${meetup.id}`, meetup);
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({

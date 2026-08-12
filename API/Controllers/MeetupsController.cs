@@ -28,13 +28,16 @@ public class MeetupsController : BaseApiController
         return HandleResult(await Mediator.Send(new CreateMeetup.Command { MeetupDto = meetupDto }));
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Edit(EditMeetupDto meetupDto)
+    [HttpPut("{id}")]
+    [Authorize(Policy = "IsMeetupOrganizer")]
+    public async Task<IActionResult> Edit(string id, EditMeetupDto meetupDto)
     {
+        meetupDto.Id = id;
         return HandleResult(await Mediator.Send(new EditMeetup.Command { MeetupDto = meetupDto }));
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "IsMeetupOrganizer")]
     public async Task<IActionResult> Delete(string id)
     {
         return HandleResult(await Mediator.Send(new DeleteMeetup.Command { Id = id }));
