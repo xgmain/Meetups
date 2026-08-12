@@ -4,7 +4,9 @@ import { useMeetups } from "../../../lib/hooks/useMeetups";
 export default function MeetupList() {
     const {meetups, isPending} = useMeetups();
 
-    if (!meetups || isPending) return <Typography>Loading...</Typography>
+    if (isPending) return <Typography>Loading...</Typography>
+    
+    if (!meetups) return <Typography>No meetups found...</Typography>
     
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

@@ -5,15 +5,16 @@ import {useLocation} from "react-router";
 export const useMeetups = (id?: string) => {
     const queryClient = useQueryClient();
     const location = useLocation();
+    const currentUser = queryClient.getQueryData(['user']);
 
-    const { isPending, data: meetups } = useQuery({
+    const { isLoading, data: meetups } = useQuery({
         queryKey: ['meetups'],
         queryFn: async () => {
             const response = await agent.get<Meetup[]>('/meetups');
             return response.data;
         },
         staleTime: 1000 * 60 * 5,
-        enabled: !id && location.pathname.includes("meetups"),
+        enabled: !id && location.pathname.includes("meetups") && !!currentUser
     });
 
     const { data: meetup, isLoading: isLoadingMeetup } = useQuery({
@@ -22,7 +23,7 @@ export const useMeetups = (id?: string) => {
             const response = await agent.get<Meetup>(`/meetups/${id}`);
             return response.data;
         },
-        enabled: !!id
+        enabled: !!id && !!currentUser
     });
 
     const updateMeetup = useMutation({
@@ -61,7 +62,7 @@ export const useMeetups = (id?: string) => {
 
     return {
         meetups,
-        isPending,
+        isLoading,
         meetup,
         isLoadingMeetup,
         updateMeetup,
